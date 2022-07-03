@@ -2,10 +2,12 @@ from tkinter import *
 import subprocess
 import json
 import os
+import charConv
+import tkinter.font as tkfont
 from PIL import Image, ImageTk
 
 fontName  = 'Cascadia Mono'
-fontSize  = 15
+fontSize  = 12
 tabLength = 4
 
 # Color
@@ -45,7 +47,7 @@ def getFontName(widget):
 	return tmpFontName
 
 def changeFontSize(event, change):
-	global fontSize
+	global fontSize, statusText
 
 	if event.delta > 0:
 		change = 1
@@ -223,6 +225,7 @@ class listCommand:
 	def q(args):
 		exit()
 
+# Display all character pressed
 def handle(event):
 	charStat.config(state = NORMAL)
 	charStat.insert(END, charConv.charConv(event.keysym))
@@ -233,6 +236,7 @@ def handle(event):
 	else:
 		command.focus()
 
+# Set status widget content
 def setStatus():
 	global statusText
 	status.config(state = NORMAL)
@@ -248,6 +252,7 @@ def setStatus():
 	else:
 		status.config(height = 5)
 
+# entering insert mode
 def focusContent():
 	global insertMode, insertCommand, statusText
 	if insertMode == False and (insertCommand == False or len(command.get()) == 0):
@@ -256,14 +261,16 @@ def focusContent():
 		content.config(state = NORMAL)
 		content.focus()
 		status.config(fg = 'purple')
-		statusText = "-- INSERT MODE --"
+		rowPos, colPos = map(int, content.index(INSERT).split('.'))
+		statusText = "INSERT, Line " + str(rowPos) + ", Column " + str(colPos)
 		setStatus()
 
+# entering command mode
 def focusCommand(event):
 	global insertMode, statusText
 	insertMode = False
 	status.config(fg = 'purple')
-	statusText = '-- COMMAND MODE --'
+	statusText = 'COMMAND MODE'
 	setStatus()
 	content.config(state = DISABLED)
 	command.focus()
@@ -274,6 +281,7 @@ def toInsertCommand():
 	insertCommand = True
 	command.config(state = NORMAL)
 
+# Submit command from commandLine to be execute
 def submitCommand(event):
 	status.config(fg = 'yellow')
 	global insertCommand, statusText
@@ -296,6 +304,7 @@ def submitCommand(event):
 	setStatus()
 	window.update()
 
+# AutoCLose bracket or parenthesis
 def autoClose(event):
 	char = None
 	if event.keysym == 'bracketleft':
@@ -317,6 +326,7 @@ def autoClose(event):
 	handle(event)
 	return 'break' # To make sure the character we pressed doesn't inputed to the widget
 
+# Auto Tab feature 
 def alignTab(event):
 	global tabLength
 	tabCount = 0
@@ -347,7 +357,10 @@ def alignTab(event):
 	handle(event)
 	return 'break' # To make sure the character we pressed doesn't inputed to the widget
 
+# Updating window appearance when some window things is update
+# such as: status text height, etc
 def update():
+	global statusText
 	rowCount = status.count('1.0', END, 'displaylines')[0] 
 	if rowCount == 0:
 		status.config(height = 1)
@@ -355,6 +368,10 @@ def update():
 		status.config(height = rowCount)
 	else:
 		status.config(height = 5)
+	if insertMode == True:
+		rowPos, colPos = map(int, content.index(INSERT).split('.'))
+		statusText = "INSERT, Line " + str(rowPos) + ", Column " + str(colPos)
+		setStatus()
 	status.after(100, update)
 
 window = Tk()
@@ -366,13 +383,12 @@ window.title('aVim')
 window.iconbitmap('avim_logo.ico')
 
 # Widget
-charStat	= Entry(window, state = 'readonly', borderwidth = 0, width = 15, disabledbackground = backGroundColor, bg = backGroundColor, fg = 'green', font = (fontName, fontSize), readonlybackground = backGroundColor)
-content  	= Text(window, borderwidth = 0, bg = backGroundColor, fg = 'white', font = (fontName, fontSize), selectbackground = backGroundColor, insertbackground = insertColor)
-status      = Text(window, borderwidth = 0, height = 4, bg = backGroundColor, fg = 'purple', font = (fontName, fontSize), wrap = CHAR)
-command     = Entry(window, state = DISABLED, borderwidth = 0, bg = backGroundColor, fg = 'green', font = (fontName, fontSize), disabledbackground = backGroundColor, insertbackground = 'green')
+charStat= Entry(window, state = 'readonly', borderwidth = 0, width = 15, disabledbackground = backGroundColor, bg = backGroundColor, fg = 'green', font = (fontName, fontSize), readonlybackground = backGroundColor)
+content = Text(window, borderwidth = 0, bg = backGroundColor, fg = 'white', font = (fontName, fontSize), selectbackground = backGroundColor, insertbackground = insertColor, wrap = NONE)
+status 	= Text(window, borderwidth = 0, height = 4, bg = backGroundColor, fg = 'purple', font = (fontName, fontSize), wrap = CHAR)
+command = Entry(window, state = DISABLED, borderwidth = 0, bg = backGroundColor, fg = 'green', font = (fontName, fontSize), disabledbackground = backGroundColor, insertbackground = 'green')
 
 # Setting tab size
-import tkinter.font as tkfont
 fontTabs = tkfont.Font(font = content['font'])
 content.config(tabs = fontTabs.measure(' ' * tabLength))
 
@@ -386,8 +402,6 @@ status .config(state = DISABLED)
 content.config(state = DISABLED)
 command.config(state = DISABLED)
 command.focus_force()
-
-import charConv
 
 # Keybinding
 window .bind('<Key>'	, lambda event : handle(event))
