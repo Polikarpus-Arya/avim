@@ -2,7 +2,7 @@
 	"background"	: "#1A1E24",
 	"foreground"	: "#Eaeae9",
 	"insertCursor"	: "#f3e728",
-	"selectColor"	: "#B4b5b5",
+	"selectColor"	: "#484848",
 	"commandColor"	: "#49be25",
 	"commandCursor"	: "#49be25",
 	"keyPressed"	: "#777777",
