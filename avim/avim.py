@@ -12,7 +12,7 @@ setting = json.load(open('settings.json'))
 fontName  	= setting.get("fontName")
 fontSize  	= setting.get("fontSize")
 tabLength 	= setting.get("tabLength")
-colorScheme = json.load(open("colorScheme/" + setting.get("ColorScheme") + '.avim-color'))
+colorScheme 	= json.load(open("colorScheme/" + setting.get("ColorScheme") + '.avim-color'))
 
 # Color Scheme
 background    = colorScheme.get("background")
