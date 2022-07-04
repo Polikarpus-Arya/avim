@@ -12,12 +12,13 @@ setting = json.load(open('settings.json'))
 fontName  	= setting.get("fontName")
 fontSize  	= setting.get("fontSize")
 tabLength 	= setting.get("tabLength")
-colorScheme 	= json.load(open("colorScheme/" + setting.get("ColorScheme") + '.avim-color'))
+colorScheme = json.load(open("colorScheme/" + setting.get("ColorScheme") + '.json'))
 
 # Color Scheme
 background    = colorScheme.get("background")
 foreground    = colorScheme.get("foreground")
 insertCursor  = colorScheme.get("insertCursor")
+selectColor   = colorScheme.get("selectColor")
 commandColor  = colorScheme.get("commandColor")
 commandCursor = colorScheme.get("commandCursor")
 keyPressed    = colorScheme.get("keyPressed")
@@ -394,7 +395,7 @@ window.iconbitmap('avim_logo.ico')
 
 # Widget
 charStat= Entry(window, state = 'readonly', borderwidth = 0, width = 15, disabledbackground = background, bg = background, fg = keyPressed, font = (fontName, fontSize), readonlybackground = background, disabledforeground = keyPressed)
-content = Text(window, borderwidth = 0, bg = background, fg = foreground, font = (fontName, fontSize), selectbackground = background, insertbackground = foreground, wrap = NONE)
+content = Text(window, borderwidth = 0, bg = background, fg = foreground, font = (fontName, fontSize), selectbackground = selectColor, insertbackground = foreground, wrap = NONE)
 status 	= Text(window, borderwidth = 0, height = 4, bg = background, fg = consoleColor, font = (fontName, fontSize), wrap = CHAR)
 command = Entry(window, state = DISABLED, borderwidth = 0, bg = background, fg = commandColor, font = (fontName, fontSize), disabledbackground = background, insertbackground = commandCursor)
 
