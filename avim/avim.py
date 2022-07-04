@@ -6,16 +6,26 @@ import charConv
 import tkinter.font as tkfont
 from PIL import Image, ImageTk
 
-fontName  = 'Cascadia Mono'
-fontSize  = 12
-tabLength = 4
+# Initialize
+setting = json.load(open('settings.json'))
 
-# Color
-backGroundColor = '#1A1E24'
-insertColor     = 'yellow'
+fontName  	= setting.get("fontName")
+fontSize  	= setting.get("fontSize")
+tabLength 	= setting.get("tabLength")
+colorScheme = json.load(open("colorScheme/" + setting.get("ColorScheme") + '.avim-color'))
 
-# 'Perfect Dos VGA 437 Win'
-# 'Modern DOS 8x14'
+# Color Scheme
+background    = colorScheme.get("background")
+foreground    = colorScheme.get("foreground")
+insertCursor  = colorScheme.get("insertCursor")
+commandColor  = colorScheme.get("commandColor")
+commandCursor = colorScheme.get("commandCursor")
+keyPressed    = colorScheme.get("keyPressed")
+
+consoleColor  = colorScheme.get("consoleColor")
+errorColor    = colorScheme.get("errorColor")
+successColor  = colorScheme.get("successColor")
+fileColor     = colorScheme.get("fileColor")
 
 insertMode 	  = False
 insertCommand = False
@@ -107,9 +117,9 @@ class listCommand:
 		res = result.stderr.decode('utf-8')
 		if len(res) == 0:
 			res = "Program compiled successfully :)"
-			status.config(fg = '#00FFFF')
+			status.config(fg = successColor)
 		else:
-			status.config(fg = 'red')
+			status.config(fg = errorColor)
 		statusText = res
 
 	# Run file
@@ -171,13 +181,13 @@ class listCommand:
 		if os.path.exists(tmpPathName) and os.path.isdir(tmpPathName):
 			pathName = tmpPathName
 		else:
-			status.config(fg = 'red')
+			status.config(fg = errorColor)
 			statusText = 'Path not found!'
 			return
 
 		pathName = pathName.replace('\\', '/')
 
-		# Handle such case like d:, c:, etc
+		# updateChar such case like d:, c:, etc
 		if pathName[-1] == ':':
 			pathName = pathName + '/'
 
@@ -226,7 +236,7 @@ class listCommand:
 		exit()
 
 # Display all character pressed
-def handle(event):
+def updateChar(event):
 	charStat.config(state = NORMAL)
 	charStat.insert(END, charConv.charConv(event.keysym))
 	charStat.config(state = DISABLED)
@@ -274,7 +284,7 @@ def focusCommand(event):
 	setStatus()
 	content.config(state = DISABLED)
 	command.focus()
-	handle(event)
+	updateChar(event)
 
 def toInsertCommand():
 	global insertCommand
@@ -283,7 +293,7 @@ def toInsertCommand():
 
 # Submit command from commandLine to be execute
 def submitCommand(event):
-	status.config(fg = 'yellow')
+	status.config(fg = fileColor)
 	global insertCommand, statusText
 	insertCommand = False
 	args = command.get().split(' ')
@@ -298,7 +308,7 @@ def submitCommand(event):
 	try:
 		getattr(listCommand, args[0])(args[1:])
 	except AttributeError as e:
-		status.config(fg = 'red')
+		status.config(fg = errorColor)
 		statusText = 'Command not found!'
 
 	setStatus()
@@ -323,7 +333,7 @@ def autoClose(event):
 	rowPos, colPos = map(int, content.index(INSERT).split('.'))
 	content.insert(str(rowPos) + '.' + str(colPos), char)
 	content.mark_set('insert', str(rowPos) + '.' + str(colPos + 1))
-	handle(event)
+	updateChar(event)
 	return 'break' # To make sure the character we pressed doesn't inputed to the widget
 
 # Auto Tab feature 
@@ -354,12 +364,12 @@ def alignTab(event):
 		content.insert(str(rowPos) + '.' + str(colPos), '\n')
 		content.insert(str(rowPos + 1) + '.0', '\t' * tabCount)
 	
-	handle(event)
+	updateChar(event)
 	return 'break' # To make sure the character we pressed doesn't inputed to the widget
 
 # Updating window appearance when some window things is update
 # such as: status text height, etc
-def update():
+def updateStatusSize():
 	global statusText
 	rowCount = status.count('1.0', END, 'displaylines')[0] 
 	if rowCount == 0:
@@ -372,21 +382,21 @@ def update():
 		rowPos, colPos = map(int, content.index(INSERT).split('.'))
 		statusText = "INSERT, Line " + str(rowPos) + ", Column " + str(colPos)
 		setStatus()
-	status.after(100, update)
+	status.after(100, updateStatusSize)
 
 window = Tk()
 window.geometry('650x650+5+6')
-window.config(bg = backGroundColor, padx = 15, pady = 15)
+window.config(bg = background, padx = 15, pady = 15)
 window.title('aVim')
 # icon = PhotoImage(file = 'icon.png')
 # window.iconphoto(True, icon)
 window.iconbitmap('avim_logo.ico')
 
 # Widget
-charStat= Entry(window, state = 'readonly', borderwidth = 0, width = 15, disabledbackground = backGroundColor, bg = backGroundColor, fg = 'green', font = (fontName, fontSize), readonlybackground = backGroundColor)
-content = Text(window, borderwidth = 0, bg = backGroundColor, fg = 'white', font = (fontName, fontSize), selectbackground = backGroundColor, insertbackground = insertColor, wrap = NONE)
-status 	= Text(window, borderwidth = 0, height = 4, bg = backGroundColor, fg = 'purple', font = (fontName, fontSize), wrap = CHAR)
-command = Entry(window, state = DISABLED, borderwidth = 0, bg = backGroundColor, fg = 'green', font = (fontName, fontSize), disabledbackground = backGroundColor, insertbackground = 'green')
+charStat= Entry(window, state = 'readonly', borderwidth = 0, width = 15, disabledbackground = background, bg = background, fg = keyPressed, font = (fontName, fontSize), readonlybackground = background, disabledforeground = keyPressed)
+content = Text(window, borderwidth = 0, bg = background, fg = foreground, font = (fontName, fontSize), selectbackground = background, insertbackground = foreground, wrap = NONE)
+status 	= Text(window, borderwidth = 0, height = 4, bg = background, fg = consoleColor, font = (fontName, fontSize), wrap = CHAR)
+command = Entry(window, state = DISABLED, borderwidth = 0, bg = background, fg = commandColor, font = (fontName, fontSize), disabledbackground = background, insertbackground = commandCursor)
 
 # Setting tab size
 fontTabs = tkfont.Font(font = content['font'])
@@ -404,7 +414,7 @@ command.config(state = DISABLED)
 command.focus_force()
 
 # Keybinding
-window .bind('<Key>'	, lambda event : handle(event))
+window .bind('<Key>'	, lambda event : updateChar(event))
  
 content.bind('<Escape>'	, lambda event : focusCommand(event))
 content.bind('<Return>'	, lambda event : alignTab(event))
@@ -426,7 +436,7 @@ content.bind('<Control-equal>'		, lambda event : changeFontSize(event, 1))
 content.bind('<Control-minus>'		, lambda event : changeFontSize(event, -1))
 content.bind('<Control-MouseWheel>'	, lambda event : changeFontSize(event, 1))
 
-update()
+updateStatusSize()
 
 window.mainloop()
 
