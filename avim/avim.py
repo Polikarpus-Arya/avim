@@ -90,16 +90,13 @@ def formatCommand(tmpCommand):
 	return tmpCommand
 
 class listCommand:
-	global statusText
-	global fileName, fileExte, pathName
-
 	# Saving file
 	def sav(args = None):
 		global statusText, fileName, fileExte
 		if fileName == None and len(args) == 0:
 			statusText = "No file name provided!"
 			return
-		elif fileName == None and len(args) > 0:
+		else:
 			fileName = args[0]
 		open(pathName + '/' + fileName, 'w').write(content.get('1.0', END))
 		fileExte = getFileExtension(fileName)
@@ -313,7 +310,7 @@ def submitCommand(event):
 		statusText = 'Command not found!'
 
 	setStatus()
-	window.update()
+	window.update_idletasks()
 
 # AutoCLose bracket or parenthesis
 def autoClose(event):
